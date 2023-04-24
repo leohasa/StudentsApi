@@ -36,4 +36,14 @@ public class GsonUtils<T> {
 
         return gson.fromJson(payload, classT);
     }
+
+    public String ReadString(HttpServletRequest request, Class<T> classT) throws IOException {
+        var buffer = new StringBuilder();
+        var reader = request.getReader();
+
+        String line;
+        while ((line = reader.readLine()) != null) buffer.append(line);
+
+        return buffer.toString();
+    }
 }

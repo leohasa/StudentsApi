@@ -23,7 +23,7 @@ public class StudentController extends HttpServlet {
     }
 
     // GET students/
-    // GET students/id
+    // GET students/2
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
