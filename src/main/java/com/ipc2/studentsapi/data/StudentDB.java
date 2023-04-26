@@ -11,10 +11,10 @@ public class StudentDB {
 
     public StudentDB(){
         students = new ArrayList<>();
-        students.add(Student.builder().id(1).name("John").email("john@email.com").age(20).registered(true).build());
-        students.add(Student.builder().id(2).name("Mary").email("mary@email.com").age(21).registered(false).build());
-        students.add(Student.builder().id(3).name("Peter").email("peter@email.com").age(22).registered(true).build());
-        students.add(Student.builder().id(4).name("Jane").email("jane@email.com").age(23).registered(false).build());
+        students.add(Student.builder().id(1).name("John").email("john@email.com").password("123").age(20).registered(true).build());
+        students.add(Student.builder().id(2).name("Mary").email("mary@email.com").password("123").age(21).registered(false).build());
+        students.add(Student.builder().id(3).name("Peter").email("peter@email.com").password("123").age(22).registered(true).build());
+        students.add(Student.builder().id(4).name("Jane").email("jane@email.com").password("123").age(23).registered(false).build());
     }
 
     public void create (Student student) {
@@ -38,6 +38,7 @@ public class StudentDB {
             studentDB.setEmail(student.getEmail());
             studentDB.setAge(student.getAge());
             studentDB.setRegistered(student.isRegistered());
+            studentDB.setPassword(student.getPassword());
         }
     }
 
