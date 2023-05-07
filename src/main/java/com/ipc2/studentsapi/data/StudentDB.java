@@ -2,47 +2,109 @@ package com.ipc2.studentsapi.data;
 
 import com.ipc2.studentsapi.model.Student;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class StudentDB {
-    private List<Student> students;
+    private Connection conexion = Conexion.obtenerConexion();
 
     public StudentDB(){
-        students = new ArrayList<>();
-        students.add(Student.builder().id(1).name("John").email("john@email.com").password("123").age(20).registered(true).build());
-        students.add(Student.builder().id(2).name("Mary").email("mary@email.com").password("123").age(21).registered(false).build());
-        students.add(Student.builder().id(3).name("Peter").email("peter@email.com").password("123").age(22).registered(true).build());
-        students.add(Student.builder().id(4).name("Jane").email("jane@email.com").password("123").age(23).registered(false).build());
     }
 
     public void create (Student student) {
-        student.setId(students.size() + 1);
-        students.add(student);
+        String query = "INSERT INTO students (id, name, email, password, age, registered) VALUES (?, ?, ?, ?, ?, ?)";
+        try (var preparedStatement = conexion.prepareStatement(query)) {
+            preparedStatement.setInt(1, student.getId());
+            preparedStatement.setString(2, student.getName());
+            preparedStatement.setString(3, student.getEmail());
+            preparedStatement.setString(4, student.getPassword());
+            preparedStatement.setInt(5, student.getAge());
+            preparedStatement.setBoolean(6, student.isRegistered());
+            preparedStatement.executeUpdate();
+            System.out.println("Estudiante creado");
+        } catch (SQLException e) {
+            System.out.println("Error al crear estudiante: " + e);
+        }
     }
 
     public List<Student> readAll() {
+        var students = new ArrayList<Student>();
+        try (var stmt = conexion.createStatement();
+             var resultSet = stmt.executeQuery("SELECT *  FROM students")) {
+
+            while (resultSet.next()) {
+
+                var id = resultSet.getInt("id");
+                var nombre = resultSet.getString("name");
+                var password = resultSet.getString("password");
+                var email = resultSet.getString("email");
+                var age = resultSet.getInt("age");
+                var registered = resultSet.getBoolean("registered");
+
+                var student = new Student(id, nombre, email, password, age, registered);
+                students.add(student);
+            }
+        }catch (SQLException e) {
+            System.out.println("Error al consultar: " + e);
+        }
         return students;
     }
 
     public Optional<Student> read(int id) {
-        return students.stream().filter(s -> s.getId() == id).findFirst();
+        String query = "SELECT * FROM students WHERE id = ?";
+        Student student = null;
+
+        try (var preparedStatement = conexion.prepareStatement(query)) {
+            preparedStatement.setInt(1, id);
+
+            try (var resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+
+                    var nombre = resultSet.getString("name");
+                    var password = resultSet.getString("password");
+                    var email = resultSet.getString("email");
+                    var age = resultSet.getInt("age");
+                    var registered = resultSet.getBoolean("registered");
+
+                    student = new Student(id, nombre, email, password, age, registered);
+                }
+            }
+        }catch (SQLException e) {
+            System.out.println("Error al consultar: " + e);
+        }
+
+        return Optional.ofNullable(student);
     }
 
     public void update(Student student) {
-        var studentDB = students.stream().filter(s -> s.getId() == student.getId()).findFirst().orElse(null);
+        String query = "UPDATE students SET name = ?, email = ?, password = ?, age = ?, registered = ? WHERE id = ?";
 
-        if (studentDB != null) {
-            studentDB.setName(student.getName());
-            studentDB.setEmail(student.getEmail());
-            studentDB.setAge(student.getAge());
-            studentDB.setRegistered(student.isRegistered());
-            studentDB.setPassword(student.getPassword());
+        try (var preparedStatement = conexion.prepareStatement(query)) {
+            preparedStatement.setString(1, student.getName());
+            preparedStatement.setString(2, student.getEmail());
+            preparedStatement.setString(3, student.getPassword());
+            preparedStatement.setInt(4, student.getAge());
+            preparedStatement.setBoolean(5, student.isRegistered());
+            preparedStatement.setInt(6, student.getId());
+            preparedStatement.executeUpdate();
+            System.out.println("Estudiante actualizado");
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar estudiante: " + e);
         }
     }
 
     public void delete(int id) {
-        students.stream().filter(s -> s.getId() == id).findFirst().ifPresent(studentDB -> students.remove(studentDB));
+        String query = "DELETE FROM students WHERE id = ?";
+
+        try (var preparedStatement = conexion.prepareStatement(query)) {
+            preparedStatement.setInt(1, id);
+            preparedStatement.executeUpdate();
+            System.out.println("Estudiante eliminado");
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar estudiante: " + e);
+        }
     }
 }
